@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import threading
 import re
 
@@ -8,7 +9,6 @@ from global_variable import HAS_QT, HEADERS
 
 if HAS_QT:
     from global_variable import SENDER
-
 
 class Novel():
     """
@@ -72,16 +72,15 @@ class Novel():
         """
         temp_chapter_links = soup.select(
             'body div.content div.container div.row-fluid div.span9 div.well div.row-fluid ul.lk-chapter-list li')
-        find_chapter_links = re.compile(r'<a href="(.*)">')
         chapter_links = []
         for i in temp_chapter_links:
-            chapter_links.append(find_chapter_links.search(str(i)).group(1))
+            chapter_links.append(i.find("a")["href"])
         return chapter_links
 
     def find_volume_name_number(self, soup):
-        name_and_number = str(soup.select('h1.ft-24 strong'))[1:-1].replace('</strong>', '').split('\n')
-        self.volume_name = name_and_number[1].strip()
-        self.volume_number = name_and_number[2].strip()
+        name_and_number = soup.select("h1.ft-24 strong")[0].text.replace("\t", "").strip().split("\n")
+        self.volume_name = name_and_number[0]
+        self.volume_number = name_and_number[1]
         self.print_info('Volume_name:' + self.volume_name + ',Volume_number:' + self.volume_number)
 
     @property
@@ -90,23 +89,20 @@ class Novel():
 
     def find_author_illustrator(self, soup):
         temp_author_name = soup.select('table.lk-book-detail td')
-        find_author_name = re.compile(r'target="_blank">(.*)</a></td>')
-        find_illustrator_name = re.compile(r'<td>(.*)</td>')
-        self.author = find_author_name.search(str(temp_author_name[3])).group(1)
-        self.illustrator = find_illustrator_name.search(str(temp_author_name[5])).group(1)
+
+        self.author = temp_author_name[3].text
+        self.illustrator = temp_author_name[5].text
         self.print_info('Author:' + self.author + '\nillustrator:' + self.illustrator)
 
     def find_introduction(self, soup):
         temp_introduction = soup.select(
             'html body div.content div.container div.row-fluid div.span9 div.well div.row-fluid div.span10 p')
-        find_introduction = re.compile(r'<p style="width:42em; text-indent: 2em;">(.*)</p>')
-        self.introduction = find_introduction.search(str(temp_introduction).replace('\n', '')).group(1)
+        self.introduction = temp_introduction[1]
 
     def find_cover_url(self, soup):
         temp_cover_url = soup.select(
             'div.container div.row-fluid div.span9 div.well div.row-fluid div.span2 div.lk-book-cover a')
-        find_cover_url = re.compile(r'<img src="(.*)"/>')
-        self.cover_url = 'http://lknovel.lightnovel.cn' + find_cover_url.search(str(temp_cover_url)).group(1)
+        self.cover_url = 'http://lknovel.lightnovel.cn' + temp_cover_url[0].find("img")["src"]
 
     def extract_epub_info(self):
         """
@@ -138,7 +134,7 @@ class Novel():
             A string contain the chapter name
         """
         chapter_name = soup.select('h3.ft-20')[0].get_text()
-        new_chapter_name = chapter_name[:chapter_name.index('章') + 1] + ' ' + chapter_name[chapter_name.index('章') + 1:]
+        new_chapter_name = chapter_name[:chapter_name.index(u'章') + 1] + ' ' + chapter_name[chapter_name.index(u'章') + 1:]
         return new_chapter_name
 
     @staticmethod
@@ -163,12 +159,11 @@ class Novel():
         """
         content = []
         temp_chapter_content = soup.select('div.lk-view-line')
-        find_picture_url = re.compile(r'data-cover="(.*)" src="')
         for line in temp_chapter_content:
             if 'lk-view-img' not in str(line):
                 content.append(line.get_text().strip())
             else:
-                picture_url = find_picture_url.search(str(line)).group(1)
+                picture_url = line.find("img")["data-cover"]
                 content.append(picture_url)
         return content
 

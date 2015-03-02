@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """lknovel
 
 Usage:
@@ -36,7 +37,6 @@ if HAS_QT:
     from global_variable import SENDER
 
 SINGLE_THREAD = False
-
 
 def is_single_thread():
     single = input("Single Thread(Y/N)?:")
@@ -80,19 +80,12 @@ def grab_volume(url, output_dir, cover_path):
         output_dir: A string represent the path of the output EPUB file
         cover_file: A string represent the path of the EPUB cover
     """
-    try:
-        print_info('Getting:' + url)
-        novel = Novel(url=url, single_thread=SINGLE_THREAD)
-        novel.get_novel_information()
-        epub = Epub(output_dir=output_dir, cover_path=cover_path, **novel.novel_information())
-        epub.generate_epub()
+    print_info('Getting:' + url)
+    novel = Novel(url=url, single_thread=SINGLE_THREAD)
+    novel.get_novel_information()
+    epub = Epub(output_dir=output_dir, cover_path=cover_path, **novel.novel_information())
+    epub.generate_epub()
 
-    except Exception as e:
-        if HAS_QT:
-            SENDER.sigWarningMessage.emit('错误', str(e) + '\nat:' + url)
-            SENDER.sigButton.emit()
-        print(url)
-        raise e
 
 
 def parse_page(url):
@@ -121,9 +114,8 @@ def grab_booklist(url, output_dir, cover_path):
     """
     soup = parse_page(url)
     temp_volume_link = soup.select('body div.content div.container dl dd.row div.inline h2.ft-24 strong a')
-    find_lolume_link = re.compile(r'<a href="(.*)">')
     for i in temp_volume_link:
-        volume_link = find_lolume_link.search(str(i)).group(1)
+        volume_link = i["href"]
         grab_volume(volume_link, output_dir, cover_path)
 
 

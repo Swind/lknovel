@@ -1,9 +1,11 @@
+# -*- coding: utf-8 -*-
 import codecs
 import threading
 import os
 import re
-import queue
 import shutil
+import Queue as queue
+#import queue
 import sys
 import uuid
 import zipfile
@@ -19,6 +21,8 @@ if HAS_QT:
 _download_queue = queue.Queue()
 _PROGRESS_LOCK = threading.Lock()
 
+from opencc import OpenCC
+opencc = OpenCC()
 
 class Epub():
     """
@@ -102,7 +106,7 @@ class Epub():
             space_number = 60 - sharp_number
             sys.stdout.write(
                 '\r' + str(self.finished_picture_number) + '/' + str(
-                    len(self.pictures)) + '[' + '#' * sharp_number + ' ' * space_number + ']')
+                    len(self.pictures)) + '[' + '#' * int(sharp_number) + ' ' * int(space_number) + ']')
             sys.stdout.flush()
 
     def download_picture(self):
@@ -156,7 +160,7 @@ class Epub():
     @staticmethod
     def write_html(html, file_path):
         with codecs.open(file_path, 'w', 'utf-8') as f:
-            f.write(BeautifulSoup(html).prettify())
+            f.write(opencc.convert(BeautifulSoup(html).prettify()))
 
     def create_chapter_html(self):
         chapter_html = self.file_to_string('./templates/Chapter.html')
@@ -180,8 +184,8 @@ class Epub():
 
     def create_title_html(self):
         title_html = self.file_to_string('./templates/Title.html')
-        author = '<p class="titlep">作者：' + self.author + '</p>'
-        illustrator = '' if not self.illustrator else '<p class="titlep">插画：' + self.illustrator + '</p>'
+        author = u'<p class="titlep">作者：' + self.author + '</p>'
+        illustrator = '' if not self.illustrator else u'<p class="titlep">插画：' + self.illustrator + '</p>'
         final_title_html = title_html.format(book_name=self.book_name, volume_name=self.volume_name,
                                              volume_number=self.volume_number, author=author,
                                              illustrator=illustrator)
@@ -200,12 +204,15 @@ class Epub():
             _download_queue.put(picture)
         th = []
         self.print_info('Start downloading pictures, total number:' + str(len(self.pictures)))
+        self.download_picture()
+        """
         for i in range(5):
             t = threading.Thread(target=self.download_picture)
             t.start()
             th.append(t)
         for t in th:
             t.join()
+        """
 
     def create_content_opf_html(self):
         content_opf_html = self.file_to_string('./templates/content.opf')
@@ -313,7 +320,7 @@ class Epub():
         self.create_html()
 
         self.zip_files()
-        self.print_info('\n已生成：' + self.book_name + '.epub\n\n')
+        self.print_info(u'\n已生成：' + self.book_name + u'.epub\n\n')
 
         # delete temp file
         shutil.rmtree(self.base_path)
