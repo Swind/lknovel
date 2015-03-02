@@ -78,14 +78,14 @@ class Novel():
         return chapter_links
 
     def find_volume_name_number(self, soup):
-        name_and_number = soup.select("h1.ft-24 strong")[0].text.replace("\t", "").strip().split("\n")
-        self.volume_name = name_and_number[0]
-        self.volume_number = name_and_number[1]
+        name_and_number = soup.select("h1.ft-24 strong")[0].text.replace("\t", u"").strip().split("\n")
+        self.volume_name = name_and_number[0].strip()
+        self.volume_number = name_and_number[1].strip()
         self.print_info('Volume_name:' + self.volume_name + ',Volume_number:' + self.volume_number)
 
     @property
     def book_name(self):
-        return self.volume_name + ' ' + self.volume_number
+        return self.volume_name + u' ' + self.volume_number
 
     def find_author_illustrator(self, soup):
         temp_author_name = soup.select('table.lk-book-detail td')

@@ -312,7 +312,7 @@ class Epub():
 
     def generate_epub(self):
         """generate epub file from novel"""
-        folder_name = re.sub(r'[<>:"/\\|\?\*]', '_', self.book_name)
+        folder_name = re.sub(r'[<>:"/\\|\?\*]', u'_', opencc.convert(self.book_name))
         self.base_path = os.path.abspath(folder_name)
         self.create_folders()
         self.move_or_download_cover()
