@@ -29,7 +29,6 @@ from bs4 import BeautifulSoup
 from docopt import docopt
 import requests
 
-from epub import Epub
 from global_variable import HAS_QT, HEADERS
 from novel import Novel
 
@@ -81,12 +80,9 @@ def grab_volume(url, output_dir, cover_path):
         cover_file: A string represent the path of the EPUB cover
     """
     print_info('Getting:' + url)
-    novel = Novel(url=url, single_thread=SINGLE_THREAD)
-    novel.get_novel_information()
-    epub = Epub(output_dir=output_dir, cover_path=cover_path, **novel.novel_information())
-    epub.generate_epub()
-
-
+    novel = Novel(url=url)
+    novel.parse()
+    novel.save(output_dir)
 
 def parse_page(url):
     """
