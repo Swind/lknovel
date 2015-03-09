@@ -115,7 +115,7 @@ def grab_booklist(url, output_dir, cover_path):
         grab_volume(volume_link, output_dir, cover_path)
 
 
-def start(urls, output_dir=None, cover_path=None):
+def start(urls, output_dir, cover_path=None):
     """
     start the job using url
 

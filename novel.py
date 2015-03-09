@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import os
 import re
 import StringIO
 
@@ -54,7 +55,7 @@ class Novel():
 
     def save(self, folder_path):
         """Save novel information and chapters content as markdown"""
-        file_name = self.book_name() + u".md"         
+        file_name = self.book_name + u".md"         
 
         if self.convert_to_tw:
             file_name = opencc.convert(file_name)
@@ -64,27 +65,27 @@ class Novel():
         md_buf = StringIO.StringIO()
 
         # Book Name
-        md_buf.write("% {}\n".format(self.book_name))
+        md_buf.write(u"% {}\n\n".format(self.book_name))
         # Author Name
-        md_buf.write("% {}\n".format(self.author))
+        md_buf.write(u"% {}\n\n".format(self.author))
         # Introduction
-        md_buf.write("{}\n".format(self.introduction))
+        md_buf.write(u"{}\n\n".format(self.introduction))
 
         for chapter in sorted(self.chapters, key=lambda x: x[0]):
             # Chapter Name
-            md_buf.write("# {}\n".format(chapter[1]))
+            md_buf.write(u"# {}\n\n".format(chapter[1]))
 
             for line in chapter[2]:
-                if line.startswith('/illustration/'):
-                    content.append("![illustration](images/{})\n".format(line))
+                if line.startswith(u'/illustration/'):
+                    md_buf.write(u"![](.{})\n\n".format(line))
                 else:
-                    content.append("{}\n".format(line))
+                    md_buf.write(u"{}\n\n".format(line))
 
         with open(file_path, "w") as md_file:
             if self.convert_to_tw:
-                md_file.write(opencc.convert(md_buf.getvalue()))
+                md_file.write(opencc.convert(md_buf.getvalue()).encode("utf-8"))
             else:
-                md_file.write(md_buf.getvalue())
+                md_file.write(md_buf.getvalue().encode("utf-8"))
 
     def __parse_page(self, url):
         """
@@ -98,7 +99,6 @@ class Novel():
         """
         r = requests.get(url, headers=HEADERS)
         r.encoding = 'utf-8'
-        import ipdb;ipdb.set_trace()
         return BeautifulSoup(r.text)
 
     # ===================================================================================================
